@@ -107,6 +107,7 @@ input:not([type="checkbox"]):not([type="radio"]),form select{
 .placeholder {
     background-color: #fff;
     margin-left: 12px;
+    margin-top: -40px;
     color: #808080;
     float: left;
 }
