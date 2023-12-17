@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+		                	<script src="https://cdn.jsdelivr.net/gh/Stars-WuFuGui/JQ-FormValidate@main/2.2/FormValidate.js"></script>
+   					<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Stars-WuFuGui/JQ-FormValidate@main/2.2/FormValidateStandalone.css">
+					//注:此处使用的是独立版本即不使用bootstrap.css的css Link 如果使用bootstrap则使用以下Link
+					<!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Stars-WuFuGui/JQ-FormValidate@main/2.2/FormValidate.css">-->
+        		
+		                	<form id="form1">
+		                		<input type="password" name="userpassword" id="userPassword" value="" placeholder="密码">
+				    		<input type="password" name="ruserpassword" id="ruserPassword" value="" placeholder="确认密码">
+		                	</form> 
+		                	<script>
+		                		var validator = new Validator();
+		                		validator.initForm($("#form1"));
+		                		validator.setValidate("userpassword",{
+					                "inputName":"密码",
+					                "validate":/^[a-zA-Z0-9]{4,12}$/,
+					                "color":"red",
+					                "message":"密码必须为4-12位",
+					                "submitFunction":rePassword,
+					                "submitBool":false,
+					                "afterBlur":"ruserpassword"
+					            })
+					            validator.setValidate("ruserpassword",{
+					                "inputName":"确认密码",
+					                "validate":/^[a-zA-Z0-9]{4,12}$/,
+					                "color":"red",
+					                "message":"确认密码必须为4-12位",
+					                "submitFunction":rePassword,
+					                "submitBool":false,
+					                "afterBlur":"userpassword"
+					            })
+		                		function rePassword() {
+						            if ($("#userPassword").val()==$("#ruserPassword").val()){
+						                return true;
+						            }
+						            return "两次密码不相同1111";
+						        }
+		                	</script>
+	</body>
+</html>
