@@ -141,7 +141,7 @@
                     </br><pre>
                         <code class="html">
                             &lt;form action="#"&gt;
-                                &lt;input placeholder="表单内容"&gt;
+                                &lt;input name="placeholder" placeholder="表单内容"&gt;
                             &lt;/form&gt;
                         </code>
                     </pre>
