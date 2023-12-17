@@ -1,0 +1,151 @@
+/*以下为可不选样式*/
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    text-align: center;
+}
+
+h1 {
+    color: #337ab7;
+}
+.navbar {
+    display: flex; /* 使用弹性盒子布局 */
+    justify-content: center; /* 水平居中对齐 */
+    width: 100%; /* 设置宽度为100% */
+    background-color: #f5f5f6/* 白色背景 */
+}
+
+.number {
+    text-align: center; /* 文本居中 */
+    padding: 10px 20px; /* 添加内边距，调整间距 */
+    border-radius: 10px; /* 圆角边框 */
+    cursor: pointer; /* 鼠标指针样式为手型 */
+    background-color: white; /* 默认背景颜色为白色 */
+    color: blue; /* 默认文本颜色为蓝色 */
+    margin: 5px; /* 间距 */
+}
+
+.number.selected {
+    background-color: blue; /* 选中状态背景颜色为蓝色 */
+    color: white; /* 选中状态文本颜色为白色 */
+}
+
+.dots {
+    white-space: nowrap; /* 禁止文本换行 */
+    overflow: hidden; /* 隐藏溢出的内容 */
+    text-overflow: ellipsis; /* 使用省略号表示文本溢出 */
+    text-align: center; /* 文本居中 */
+    padding: 10px 20px; /* 添加内边距，调整间距 */
+    border-radius: 10px; /* 圆角边框 */
+    cursor: pointer; /* 鼠标指针样式为手型 */
+    background-color: white; /* 默认背景颜色为白色 */
+    color: blue; /* 默认文本颜色为蓝色 */
+    margin: 5px; /* 间距 */
+}
+
+.dots.selected {
+    background-color: blue; /* 选中状态背景颜色为蓝色 */
+    color: white; /* 选中状态文本颜色为白色 */
+}
+#group {
+    width: 300px;
+    margin: 0 auto;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+meter{
+    width: 80%;
+}
+input[type="radio"] {
+    margin: 5px;
+}
+
+input[type="submit"]{
+    background-color: #337ab7;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    width: 80%;
+    box-sizing: border-box;
+    border-radius: 3px;
+}
+
+input[type="submit"]:hover,
+button:hover {
+    background-color: #286090;
+}
+
+#cancel-button {
+    background-color: #d9534f;
+}
+
+#cancel-button:hover {
+    background-color: #c9302c;
+}
+
+.ButtonClose{
+    float: right;
+}
+/*以下为可选样式*/
+input {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+form{
+    width: 33%;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-left: 33%;
+    position:absolute;
+    z-index: 9999;
+}
+form select{
+    text-align: center;
+    font-size: 16px;
+}
+input:not([type="checkbox"]):not([type="radio"]),form select{
+    outline: none;
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+/*以下为必选样式*/
+
+.placeholder.action{
+    background-color: transparent;
+    margin-top: -55px;
+    color: #808080;
+    margin-bottom: -10px;
+    margin-left: 6px;
+    float: left;
+    font-size: 12px;
+}
+.placeholder.dateAction{
+    background-color: transparent;
+    margin-top: -60px;
+    color: #808080;
+    margin-bottom: -10px;
+    margin-left: 6px;
+    float: left;
+    font-size: 12px;
+}
+.placeholder {
+    background-color: #fff;
+    margin-top: -40px;
+    margin-left: 12px;
+    color: #808080;
+    float: left;
+}
