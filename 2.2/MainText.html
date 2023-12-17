@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        	<script src="https://cdn.jsdelivr.net/gh/Stars-WuFuGui/JQ-FormValidate@main/2.2/FormValidate.js"></script>
+   					<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Stars-WuFuGui/JQ-FormValidate@main/2.2/FormValidateStandalone.css">
+					
+    <title>学生档案</title>
+
+</head>
+<body>
+        <form id="form1">
+		<h1>学生档案 </h1>
+<!--        	所有需要由容器管理的input首先必须有name属性 和 placeholder属性 placeholder属性不需要写请输入 直接写该列名称就行
+        	如果input为date||file时提示会一直保持触发状态(因为date自带内容xx年/xx月/xx日)-->
+            <input type="text" name="StudentsName" placeholder="姓名"/><br/>
+            <input type="tel" name="Phone" placeholder="手机号"/><br/>
+            <input type="email" name="email" placeholder="邮箱" /><br/>
+            <input type="text" name="school" placeholder="所属学院"><br/>
+            <input type="password" name="userpassword" id="userPassword" value="" placeholder="密码"><br>
+    		<input type="password" name="ruserpassword" id="ruserPassword" value="" placeholder="确认密码"><br>
+            <label>性别:</label>
+            <select  name="sex">
+            	<option value="1">男</option>
+            	<option value="2">女</option>
+            </select><br/><br/>
+            <input type="number" name="number" placeholder="入学成绩" max="750" min="0" oninput="updatemeter(this)"/><br/>
+            <label>基础水平:</label><meter id="meter" min="0" low="450" high="675" max="750" optimum="700"></meter> <br/>
+            <br/><br/>
+            <input type="date" name="indate" placeholder="入学时间"/><br/>
+            <input type="date" name="outdate" placeholder="毕业时间" /><br/>
+            <input type="file" name="studentImg" placeholder="学生头像"  /> <br/>
+            <input type="submit" value="提交"/>
+        </form>
+
+    <script>
+		/* 具有如下属性:
+		   将 Validator 创建成类似 java 的对象 以实现多个表单管理
+		   调用时使用 new Validator();
+		   举例: {
+		       1: var v1 = new Validator();
+		       // 初始化表单验证
+		       v1.initForm($("#userForm"))
+		       // 初始化之后表单中带有 name 和 placeholder 属性的已被初始化
+		       (单选框和多选框,复选框不可使用推荐添加required属性)
+		       (因为单选框多选框复选框只需要有选择就行不需要额外验证)
+		   }
+		   defaultColor 通过验证之后默认为什么颜色 默认为"#808080"(淡灰色)
+		   validates 具有两个属性 name 和 validate
+			   name ---> input 的 name 属性
+			   validate 具有如下属性:
+			   "inputName": "控件名称",
+			   "validate": 正则表达式,
+			   "color": 不符合正则时弹出的颜色,
+			   "message": 不符合正则时弹出的提示,
+			   "submitFunction": 额外验证方式(需要一个 function 返回 true 则为通过否则返回失败原因),
+			         常见的 ajax 请求如下
+			   function reName(input) {
+			       // 返回一个 Promise 对象
+			       return new Promise(function (resolve, reject) {
+			           $.ajax({
+			               type: "Post",
+			               url: "reName",
+			               async: true,
+			               contentType: "application/json",
+			               data: input.val(),
+			               success: function (bool) {
+			                   if (bool) {
+			                       resolve(bool);
+			                   } else {
+			                       resolve("账户重复");
+			                   }
+			               },
+			               error: function () {
+			                   reject("请求失败");
+			               }
+			           });
+			       });
+			   }
+			   "FunctionType": 额外验证方式 是否启用 ajax,
+			   "submitBool": 该列是否默认能提交(一般为 false) // 如果不使用 submitFunction 则不需要填写该列
+			   "afterBlur": 关联该列和另一列
+			   "afterBlurFrequency": 可迭代次数  //默认为1 
+		*/
+    	$(function(){
+    		var v1 = new Validator();
+    		v1.initForm($("#form1"));
+    		v1.afterSubmit=submitFunction;
+    		//将提交的ajax交给容器管理 不需要手动给提交按钮绑定提交事件
+    		//并且只有表单通过验证时才会触发该函数
+    		v1.defaultColor = "green";
+    		//如果我们写修改时input的value会被js或者jq修改 这时没有触发焦点离开事件 故会出现提示覆盖内容的情况此时可以使用
+    		//v1.loadValue();来触发整个表单的Blur事件
+    		
+    		//我们将(value1,value2)内的的value命名为key value2命名为validate
+    		v1.setValidate("StudentsName",{
+    			"inputName": "姓名",//重新定义该input的显示名称
+    			"validate":/^[a-zA-Z0-9]{4,20}$/,//定义姓名必须为4-20位的大小写英文和数字
+    			"color":"red",//不符合正则表达式则使用该颜色进行强调(具体参照$(input).css("color",""),可以为rpg颜色等)
+    			"message":"必须为4-20位",//这将跟在提示的后面 具体显示规则为(inputName(姓名)+message(必须为4-20位))
+    			"submitFunction":reName,//这里需要满足一个函数 那么将该函数交给容器管理 (可以不写) 通过之后提示将变为绿色
+                "FunctionType":true,//是否为ajax请求如果需要容器使用异步来处理函数则需要告诉容器为ajax请求 默认为false (可以不写)
+                "submitBool":false//不等待ajax处理完才能提交 写true则不需要等待 写false则需要等待 默认为true
+    		})
+    		v1.setValidate("userpassword",{
+                "inputName":"密码",
+                "validate":/^[a-zA-Z0-9]{4,12}$/,
+                "color":"red",
+                "message":"密码必须为4-12位",
+                "submitFunction":rePassword, //改函数为普通函数并不是ajax函数
+                "submitBool":false, //具体参照上行内容 此处因为不是ajax故为false
+                "afterBlur":"ruserpassword" ,
+                //在验证此行之后验证其他的input此处的value为其他validate的key
+            	//这里验证确认密码故填写ruserpassword照应下一行的的name
+            	"afterBlurFrequency": "1"  
+            	//默认为1 该行表示在这之后可以触发几次afterBlur事件 列如userPassword -> ruserPassword 算1次 
+            	//当迭代次数超过afterBlurFrequency属性时将不会触发afterBlur的afterBlur事件,该属性只会计算触发事件而不是当前元素
+            	//通俗来说就是我 密码->确认密码 算1次 当 密码->确认密码->密码时由于afterBlurFrequency次数不够所有不会触发确认密码的afterBlur
+    			//如果确认密码也有该属性也不会影响到密码->确认密码的规则 也就是说如果由afterBlur触发的验证将会采用第一个事件源的afterBlurFrequency
+    		})
+          	//ruserpassword同上
+            v1.setValidate("ruserpassword",{
+                "inputName":"确认密码",
+                "validate":/^[a-zA-Z0-9]{4,12}$/,
+                "color":"red",
+                "message":"确认密码必须为4-12位",
+                "submitFunction":rePassword,
+                "submitBool":false,
+                "afterBlur":"userpassword"
+                //省略afterBlurFrequency
+            })
+            //以下为普通的正则表达式填写规则 因为没有函数验证所以通过时提示不会变成绿色
+            //可以通过v1.defaultColor= "颜色" 来改变
+            v1.setValidate("Phone", {
+                "inputName": "电话号码",
+                "validate": /^1[3456789]\d{9}$/,
+                "color": "red",
+                "message": "请输入正确的电话号码",
+            });
+    	});
+    	//写方法时可以写input也可以不写 如果写了那么容器将会把触发源(触发的input)传入
+    	function reName(input) {
+            // 返回一个Promise对象
+            // 其固定写法 使用resolve返回内容 reject返回请求失败 
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    type: "Post",
+                    url: "reName",
+                    contentType: "application/json",
+                    data: $(input).val(),
+                    success: function (bool) {
+                        if (bool) {
+                            resolve(bool);//返回true则为通过
+                        } else {
+                            resolve("账户重复");//返回不为true时 会将返回结果拼接到提示后
+                        }
+                    },
+                    error: function () {
+                        reject("请求失败");
+                    }
+                });
+            });
+        }
+    	//此处不写input直接获取页面上的元素
+    	function rePassword() {
+    		//和使用ajax相同 如果返回true则代表通过 返回其他则会拼接到提示后
+            if ($("#userPassword").val()==$("#ruserPassword").val()){
+                return true;//返回true则为通过
+            }
+            return "两次密码不相同";//返回不为true时 会将返回结果拼接到提示后
+        }
+    	//
+    	function submitFunction(){
+    		//此处ajax并没有处理图像上传如果有需要可以自己添加
+    		var formData = $('#form1').serializeArray();
+	    	$.ajax({
+				url: '/Student',
+				type: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify(formData),
+				success: function () {
+					//在这里跳转页面
+				},
+				error: function (error) {
+					// 处理错误响应
+					console.error('Error:', error);
+					// 根据需要处理错误情况
+				}
+			});
+    	}
+    	function updatemeter(obj){
+    		$("#meter").val(obj.value)
+    	}
+    </script>
+</body>
+</html>
