@@ -10,7 +10,7 @@
         &lt;script src="https://cdn.jsdelivr.net/gh/Stars-WuFuGui/JQ-FormValidate@main/2.2/FormValidate.js"&gt;&lt;/script&gt;
         <br>
     		&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Stars-WuFuGui/JQ-FormValidate@main/2.2/FormValidate.css"&gt;
-    </h5>
+    </h5><h6><a href="https://cdn.jsdelivr.net/gh/Stars-WuFuGui/JQ-FromAailable@main/2.2/MainTest.html">演示文件</a></h6>
     <ol>
         <li><strong>确保至少有一种可以使用 jQuery 获取表单的方式。</strong></li>
         <li><strong>表单不需要 label，替换为 Input 的 placeholder 属性。</strong></li>
