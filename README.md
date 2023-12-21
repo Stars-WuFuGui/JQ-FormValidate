@@ -218,4 +218,11 @@
     		</ol>
     	</li>
     </ol>
+	 <h3>三,更新日志</h3>
+    <ol>
+    	<li>
+    		<strong>2023/12/21/23:23</strong>
+		<span>更改了getValue方法 条件 由input[name="...."]修改成 *[name="....."]</span>
+    	</li>
+    </ol>
 </div>
