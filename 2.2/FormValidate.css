@@ -28,6 +28,15 @@
     float: left;
     font-size: 12px;
 }
+.placeholder.dateAction{
+    background-color: transparent;
+    margin-top: -55px;
+    color: #808080;
+    margin-bottom: -10px;
+    margin-left: 6px;
+    float: left;
+    font-size: 18px;
+}
 .placeholder {
     background-color: #fff;
     margin-top: -25px;
