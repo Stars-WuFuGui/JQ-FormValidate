@@ -245,7 +245,7 @@ Validator.prototype = {
         var self = this;
         var values = {};
         $.each(self.validates, function (name, value) {
-            var val = self.form.find("input[name='"+name+"']").val();
+            var val = self.form.find("*[name='"+name+"']").val();
             if (rule!= void 0 && rule[name]!=void 0){
                 name = rule[name];
             }
