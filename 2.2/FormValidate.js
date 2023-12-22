@@ -1,306 +1,417 @@
-/* 具有如下属性:
-	   将 Validator 创建成类似 java 的对象 以实现多个表单管理
-	   调用时使用 new Validator();
-	   举例: {
-	       1: var v1 = new Validator();
-	       // 初始化表单验证
-	       v1.initForm($("#userForm"))
-	       // 初始化之后表单中带有 name 和 placeholder 属性的已被初始化
-	       (单选框和多选框,复选框不可使用推荐添加required属性)
-	       (因为单选框多选框复选框只需要有选择就行不需要额外验证)
-	   }
-	   defaultColor 通过验证之后默认为什么颜色 默认为"#808080"(淡灰色)
-	   validates 具有两个属性 name 和 validate
-		   name ---> input 的 name 属性
-		   validate 具有如下属性:
-		   "inputName": "控件名称",
-		   "validate": 正则表达式,
-		   "color": 不符合正则时弹出的颜色,
-		   "message": 不符合正则时弹出的提示,
-		   "submitFunction": 额外验证方式(需要一个 function 返回 true 则为通过否则返回失败原因),
-		         常见的 ajax 请求如下
-		   function reName(input) {
-		       // 返回一个 Promise 对象
-		       return new Promise(function (resolve, reject) {
-		           $.ajax({
-		               type: "Post",
-		               url: "reName",
-		               async: true,
-		               contentType: "application/json",
-		               data: input.val(),
-		               success: function (bool) {
-		                   if (bool) {
-		                       resolve(bool);
-		                   } else {
-		                       resolve("账户重复");
-		                   }
-		               },
-		               error: function () {
-		                   reject("请求失败");
-		               }
-		           });
-		       });
-		   }
-		   "FunctionType": 额外验证方式 是否启用 ajax,
-		   "submitBool": 该列是否默认能提交(一般为 false) // 如果不使用 submitFunction 则不需要填写该列
-		   "afterBlur": 关联该列和另一列
-		   "afterBlurFrequency": 可迭代次数  //默认为1 
-	*/
-/*
-* author:WuFuGui
-* version:2.2
-*
-* */
-function Validator() {
-	this.defaultColor = "#808080";
-    this.validates = {};
-    this.submitFunction = void 0;
-    this.afterSubmit = void 0;
-    this.form = void 0;
-};
-Validator.prototype = {
-    loadValue: function () {
-        var self = this
-        for (var key in self.validates) {
-            self.blured(self.form.find("input[name='" + key + "']"), 0);
+<%--
+  Created by IntelliJ IDEA.
+  User: stare
+  Date: 2023/12/21
+  Time: 16:08
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/FormValidate.js"></script>
+    <link rel="stylesheet" href="/css/FormValidate.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/navbar.css">
+    <style>
+        #table1{
+            padding: 0px;
         }
-    },
-    initForm: function (form) {
-        var self = this;
-        self.form = form;
-        // 设置 placeholder 的逻辑
-        form.find('input').each(function () {
-            let attr = $(this).attr("placeholder");
-            let name = $(this).attr('name');
-            if (attr == "" || attr === void 0) {
+        .container-fluid{
+            padding-top: 10% !important;
+            padding: 0px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid text-center">
+        <div class="search text-center"><!-- Center the content -->
+            <form id="searchForm" class="form-inline">
+                <label class="form-label">任务名称：</label>
+                <input name="taskName" id="taskName" type="text" class="form-control" value="">
+                <button type="button" id="toggleButton" class="btn btn-success form-control">类型：接受</button>
+                <input value="搜 索" type="button" id="searchbutton" class="btn btn-primary form-control" onclick="LoadPage();">
+                <button type="button" class="btn btn-primary form-control adminButton" data-toggle="modal" data-target="#addFromModal" data-backdrop="static">
+                    添加任务
+                </button>
+            </form>
+        </div>
+        <table id="table1" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th class="text-center">任务编号</th>
+                    <th class="text-center">任务名称</th>
+                    <th class="text-center">开始时间</th>
+                    <th class="text-center">结束时间</th>
+                    <th class="text-center">实际开始时间</th>
+                    <th class="text-center">实际结束时间</th>
+                    <th class="text-center">任务状态</th>
+                    <th class="text-center">实施人编号</th>
+                    <th class="text-center">分配人编号</th>
+                    <th class="text-center">任务描述</th>
+                    <th class="text-center">操作</th>
+                </tr>
+            </thead>
+            <tbody id="TaskTbody">
+
+            </tbody>
+        </table>
+        <div class="navbar">
+        </div>
+        <div class="modal fade" id="addFromModal" tabindex="-1" role="dialog" aria-labelledby="addFromModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="addFromModalLabel">添加任务</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <form id="addFrom">
+                            <div class="form-group">
+                                <input type="text" name="taskName" class="form-control" placeholder="任务名称">
+                            </div>
+                            <div class="form-group">
+                                <input type="date" name="beginDate" class="form-control" placeholder="开始时间">
+                            </div>
+                            <div class="form-group">
+                                <input type="date" name="endDate" class="form-control" placeholder="结束时间">
+                            </div>
+                            <div class="form-group">
+                                <input type="date" name="realBeginDate" class="form-control" placeholder="实际开始时间">
+                            </div>
+                            <div class="form-group">
+                                <input type="date" name="realEndDate" class="form-control" placeholder="实际结束时间">
+                            </div>
+                            <div class="form-group">
+                                <select class="form-control" name="status" placeholder="任务状态">
+                                    <option value="未开始">未开始</option>
+                                    <option value="进行中">进行中</option>
+                                    <option value="已完成">已完成</option>
+                                    <option value="异常">异常</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>实施人:</label>
+                                <select class="employeeList form-control" name="implementorId" placeholder="实施人"></select>
+                            </div>
+                            <input type="hidden" placeholder="" name="assignerId" class="nowId">
+                            <div class="form-group">
+                                <input type="text" name="taskDesc" class="form-control" placeholder="任务描述">
+                            </div>
+                            <input type="submit" class="btn btn-primary" value="保存">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="updateFromModal" tabindex="-1" role="dialog" aria-labelledby="updateFromModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="updateFromModalLabel">修改任务</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form id="updateFrom">
+                            <div class="form-group">
+                                <input type="text" disabled name="taskId" class="form-control" placeholder="任务编号" disabled>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="taskName" class="form-control" placeholder="任务名称">
+                            </div>
+                            <div class="form-group">
+                                <input type="date" name="beginDate" class="form-control" placeholder="开始时间">
+                            </div>
+                            <div class="form-group">
+                                <input type="date" name="endDate" class="form-control" placeholder="结束时间">
+                            </div>
+                            <div class="form-group">
+                                <input type="date" name="realBeginDate" class="form-control" placeholder="实际开始时间">
+                            </div>
+                            <div class="form-group">
+                                <input type="date" name="realEndDate" class="form-control" placeholder="实际结束时间">
+                            </div>
+                            <div class="form-group">
+                                <select class="form-control" name="status" placeholder="任务状态">
+                                    <option value="未开始">未开始</option>
+                                    <option value="进行中">进行中</option>
+                                    <option value="已完成">已完成</option>
+                                    <option value="异常">异常</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <select class="employeeList form-control" name="implementorId" placeholder="实施人"></select>
+                            </div>
+                            <input type="hidden" placeholder="" name="assignerId" class="nowId">
+                            <div class="form-group">
+                                <input type="text" name="taskDesc" class="form-control" placeholder="任务描述">
+                            </div>
+                            <input type="submit" class="btn btn-primary" value="保存">
+
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<!-- ... 其他代码 ... -->
+<script>
+    var PageIndex = 1;
+    var PageSize = 5;
+    var employees ;
+    var NowEmployeeInfo;
+    var EmployeePower=false;
+    let validator = new Validator();
+    validator.initForm($("#addFrom"))
+    validator.afterSubmit=add;
+    let validator2 = new Validator();
+    validator2.initForm($("#updateFrom"))
+    validator2.afterSubmit=update;
+    var isAccepted = true;
+    $(function () {
+        var toggleButton = $('#toggleButton');
+
+
+
+        toggleButton.click(function () {
+            if (EmployeePower){
                 return;
             }
-            let inputType = $(this).attr('type');
-            $(this).attr("placeholder", "");
-            var placeholderSpan =$("<span>").text("请输入" + attr).addClass("placeholder").data('name', name).click(function () {
-                $(form).find('input[name="' + name + '"]').focus();
-            });
-            if(inputType == "date" || inputType == "file"){
-            	$(placeholderSpan).addClass("dateAction");
-            }
-            $(this).after(placeholderSpan);
-            self.addValidate(name, { "inputName": attr, "validate": "", "color": "red", "message": "格式错误" });
-        });
-        self.loadingPlaceholder(form);
-    },
-    loadingPlaceholder: function (form) {
-        var self = this;
-
-        $(form).submit(function (e) {
-            var flag = true;
-            form.find('input').each(function () {
-                var name = $(this).attr('name');
-                var value = $(this).val();
-
-                if (name == void 0 || name == "" || self.validates[name] == void 0) {
-                    return;
-                }
-
-                var validateElement = self.validates[name]["submitBool"];
-                if (validateElement == void 0) {
-
-                }else if(!validateElement){
-                    flag=false;
-                }
-
-                if (self.validates[name]["validate"] != void 0 && self.validates[name]["validate"] != "") {
-                    if (!value.match(self.validates[name]["validate"])) {
-                        flag = false;
-                    }
-                }
-
-                if (value == "" || value == void 0) {
-                    flag = false;
-                }
-            });
-
-            if (!flag) {
-                self.loadValue();
-                alert("请按要求填写表单");
-                return flag;
-            }
-            var afterSubmit = self.afterSubmit;
-            if (afterSubmit != void 0 && flag) {
-                e.preventDefault();
-                afterSubmit()
-            }
-            return flag;
+            isAccepted = !isAccepted; // 切换状态
+            toggleButton.text(isAccepted ? '类型：接受':'类型：发布'); // 切换文本
+            toggleButton.toggleClass('btn-success', isAccepted); // 切换样式类
+            toggleButton.toggleClass('btn-primary', !isAccepted); // 切换样式类
+            LoadPage();
         });
 
-        $(self.form).find('input:not([type="checkbox"]):not([type="radio"]):not([type="submit"])').on('focus', function () {
-            var inputName = $(this).attr('name');
-            $(self.form).find(".placeholder").each(function (index, element) {
-                var nameValue = $(this).data("name");
-                if (inputName == nameValue) {
-                    $(this).addClass('action');
-                    return;	
-                }
-            });
-        });
-
-        $(self.form).find('input:not([type="checkbox"]):not([type="radio"]):not([type="submit"])').on('blur', function () {
-            var bool = self.validates[$(this).attr('name')]["afterBlurFrequency"];
-            self.blured($(this), bool);
-        });
-    },
-
-    blured: function (Eml, bool) {
-        var self = this;
-        var inputName = $(Eml).attr('name');
-        let val = $(Eml).val();
-        var flag = true;
-        var validateElement1 = self.validates[inputName];
-        var validateElement2;
-
-        if (bool-- >= 1) {
-            if (validateElement1 != void 0) {
-                validateElement2 = validateElement1["afterBlur"];
-                if (validateElement2 != void 0) {
-                    self.blured($("input[name='" + validateElement2 + "']"), bool);
-                }
+        $(".navbar").on("click", ".number", function () {
+            if ($(this).hasClass("selected")) {
+                return; // 如果已经有 selected 类，则不执行任何操作
             }
-        }
+            PageIndex = parseInt($(this).text()); // 将 pageNumber 设置为当前元素的文本内容（转换为整数）
+            LoadPage(); // 调用 loadPage 函数
+        });
+        GetNowEmployeeInfo();
+        getEmployeeInfo();
+        LoadEmployeeSelect();
+        LoadPage();
 
-        $(self.form).find(".placeholder").each(function (index, element) {
-            var nameValue = $(this).data("name");
-            if (nameValue == void 0) {
-                return;
-            }
-
-            if (flag) {
-                var nameValue = $(this).data("name");
-                if (inputName == nameValue) {
-                    flag = false;
-                    $(this).addClass('action');
-                    var validateElement = self.validates[nameValue]["submitFunction"];
-                    var validateElement1 = self.validates[nameValue]["FunctionType"];
-                    if (val == "") {
-                        $(this).css("color", "red");
-                        $(this).text(self.validates[nameValue]["inputName"] + "不能为空");
-                        $(this).removeClass("action");
-                        return;
-                    }
-
-                    if (self.validates[nameValue]["validate"] != void 0 && self.validates[nameValue]["validate"] != "") {
-                        if (!val.match(self.validates[nameValue]["validate"])) {
-                            $(this).css("color", self.validates[nameValue]["color"]);
-                            $(this).text(self.validates[nameValue]["message"]);
-                            return;
-                        }
-                    }
-                   
-                    if (validateElement1 != void 0 && validateElement1) {
-                    	self.validates[nameValue]["submitBool"] = false;
-                        if (validateElement != void 0 && validateElement != "") {
-                            var thisElement = $(this);
-                            var submitFunction = validateElement($(Eml));
-                            submitFunction.then(function (result) {
-                                if (result != true) {
-                                    self.validates[nameValue]["submitBool"] = false;
-                                    $(thisElement).css("color", self.validates[nameValue]["color"]);
-                                    $(thisElement).text(self.validates[nameValue]["inputName"] + result);
-                                } else {
-                                    $(thisElement).css("color", "green");
-                                    $(thisElement).text(self.validates[nameValue]["inputName"] + "可用");
-                                    self.validates[nameValue]["submitBool"] = true;
-                                }
-
-                            }).catch(function (error) {
-                                console.error(error);
-                            });
-                        } else {
-                            $(this).css("color", self.validates[nameValue]["color"]);
-                            $(this).text(self.validates[nameValue]["input	Name"] + "SubmitFunction异常");
-                        }
-                    } else {
-                        if (validateElement != void 0 && validateElement != "") {
-                            var submitFunction = validateElement($(Eml));
-                            if (submitFunction != true) {
-                                self.validates[nameValue]["submitBool"] = false;
-                                $(this).css("color", self.validates[nameValue]["color"]);
-                                $(this).text(self.validates[nameValue]["inputName"] + submitFunction);
-                                return;
-                            } else {
-                            	$(this).css("color", "green");
-                                $(this).text(self.validates[nameValue]["inputName"]);
-                                self.validates[nameValue]["submitBool"] = true;
-                                return;
-                            }
-                        }
-                    }
-                    
-                    $(this).css("color", self.defaultColor);
-                    $(this).text(self.validates[nameValue]["inputName"]);
-                }
+    });
+    function getEmployeeInfo() {
+        $.ajax({
+            type: "get",
+            url: "/Employee/EmployeeByParentId",
+            contentType: "application/json",
+            async:false,
+            dataType: "json",
+            success: function (data) {
+                employees2=data;
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading data:", error);
             }
         });
-    },
-
-    getValue:function(rule){
-        var self = this;
-        var values = {};
-        $.each(self.validates, function (name, value) {
-            var val = self.form.find("*[name='"+name+"']").val();
-            if (rule!= void 0 && rule[name]!=void 0){
-                name = rule[name];
-            }
-            values[name] = val;
-        });
-        return values;
-    },
-
-    setValidates: function (validate) {
-        this.validates = validate;
-    },
-
-    addValidate: function (name, validate) {
-        var inputName = validate["inputName"];
-        if (inputName === "" || inputName === void 0) {
-            validate["inputName"] = name;
-        }
-        var color = validate["color"];
-        if (color === "" || color === void 0) {
-            validate["color"] = "red";
-        }
-        var message = validate["message"];
-        if (message === "" || message === void 0) {
-            validate["message"] = "格式错误";
-        }
-        var afterBlurFrequency = validate["afterBlurFrequency"];
-        if (afterBlurFrequency === "" || afterBlurFrequency === void 0) {
-            validate["afterBlurFrequency"] = 1;
-        }
-        this.validates[name] = validate;
-    },
-
-    setValidate: function (name, validate) {
-        var inputName = validate["inputName"];
-        if (inputName === "" || inputName === void 0) {
-            validate["inputName"] = name;
-        }
-        var color = validate["color"];
-        if (color === "" || color === void 0) {
-            validate["color"] = "red";
-        }
-        var message = validate["message"];
-        if (message === "" || message === void 0) {
-            validate["message"] = "格式错误";
-        }
-        var afterBlurFrequency = validate["afterBlurFrequency"];
-        if (afterBlurFrequency === "" || afterBlurFrequency === void 0) {
-            validate["afterBlurFrequency"] = 1;
-        }
-        this.validates[name] = validate;
-        $(".placeholder").each(function (index, element) {
-            var thisPlaceholder = $(this).data("name");
-            if (thisPlaceholder == name) {
-                $(this).text("请输入" + inputName);
+        $.ajax({
+            type: "get",
+            url: "/Employee/Employee",
+            contentType: "application/json",
+            async:false,
+            dataType: "json",
+            success: function (data) {
+                employees=data;
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading data:", error);
             }
         });
     }
-}
+    function LoadPage() {
+        // 获取搜索条件
+        var taskName = $("#taskName").val();
+
+        // 发起Ajax请求
+        $.ajax({
+            type: "POST",
+            url: "GetTask",
+            data: JSON.stringify({ isAccepted:isAccepted,taskName: taskName, PageNumber: PageIndex, pageSize: PageSize }),
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                LoadTbody(data.list)
+                loadNavPage(data.navigatepageNums)
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading data:", error);
+            }
+        });
+    }
+    function loadNavPage(navigatepageNums){
+        $(".navbar").empty();
+        for (let i = 0; i < navigatepageNums.length; i++) {
+            if (PageIndex == navigatepageNums[i]){
+                $(".navbar").append("<div class=\"number selected\">"+navigatepageNums[i]+"</div>");
+                continue;
+            }
+            $(".navbar").append("<div class=\"number\">"+navigatepageNums[i]+"</div>");
+        }
+
+    }
+    function LoadTbody(data) {
+
+        $("#TaskTbody").empty();
+
+        // 遍历数据，更新表格
+        $.each(data, function (index, item) {
+            let implementorId = item.implementorId==null?'未知下属':getEmployeeNameById(item.implementorId).employeeName;
+            let assignerId = item.assignerId==null?'未知上属':getEmployeeNameById(item.assignerId).employeeName;
+            var row = "<tr>" +
+                "<td class=\"text-center\">" + item.taskId + "</td>" +
+                "<td class=\"text-center\">" + item.taskName + "</td>" +
+                "<td class=\"text-center\">" + item.beginDate + "</td>" +
+                "<td class=\"text-center\">" + item.endDate + "</td>" +
+                "<td class=\"text-center\">" + item.realBeginDate + "</td>" +
+                "<td class=\"text-center\">" + item.realEndDate + "</td>" +
+                "<td class=\"text-center\">" + item.status + "</td>" +
+                "<td class=\"text-center\">" + implementorId + "</td>" +
+                "<td class=\"text-center\">" + assignerId + "</td>" +
+                "<td class=\"text-center\">" + item.taskDesc + "</td>" +
+                "<td class=\"text-center\"><button class='btn btn-primary' onclick='setTaskInfo("+item.taskId+")'>计划</button><button class='btn btn-info admin' onclick='editTask("+item.taskId+")'>编辑</button><button class='btn btn-danger admin' onclick='deleteTask("+item.taskId+")'>删除</button></td>" +
+                "</tr>";
+
+            $("#TaskTbody").append(row);
+        });
+        if (isAccepted){
+            $(".admin").hide()
+        }
+    }
+    function getEmployeeNameById(id) {
+        var employ;
+        $.each(employees, function (index, item) {
+            if (item.employeeId==id){
+                employ = item;
+            }
+        })
+        return employ;
+    }
+
+    function LoadEmployeeSelect(){
+        $(".employeeList").empty();
+        $.each(employees2, function (index, item) {
+            if (item.employeeId==NowEmployeeInfo.employeeId){
+                return;
+            }
+            $(".employeeList").append("<option value='"+item.employeeId+"'>"+item.employeeName+"</option>")
+        })
+    }
+    function editTask(id) {
+        $.ajax({
+            type: "Get",
+            url: "Task?id="+id,
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                $('#updateFromModal').modal({
+                    show:true,
+                    backdrop:"static"
+                })
+                $.each(data, function (name, value) {
+                    $("#updateFrom").find("*[name='"+name+"']").val(value);
+                });
+                validator2.loadValue();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading data:", error);
+            }
+        });
+    }
+    function deleteTask(id) {
+        if (confirm("是否删除任务:"+id+"?")){
+            $.ajax({
+                type: "delete",
+                url: "Task?id="+id,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data) {
+                    LoadPage();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error loading data:", error);
+                }
+            });
+        }
+    }
+    function update() {
+        let value = validator2.getValue();
+        $.ajax({
+            type: "Put",
+            url: "Task",
+            data: JSON.stringify(value),
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                LoadPage();
+                $('#updateFromModal').modal('toggle');
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading data:", error);
+            }
+        });
+    }
+    function add() {
+        let value = validator.getValue();
+        $.ajax({
+            type: "Post",
+            url: "Task",
+            data: JSON.stringify(value),
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                LoadPage();
+                $('#addFromModal').modal('toggle');
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading data:", error);
+            }
+        });
+    }
+    function setTaskInfo(id) {
+        $.ajax({
+            type: "Get",
+            url: "SetTaskInfo?taskId="+id,
+            success: function (data) {
+                window.location.href="/Plan/PlanIndex";
+            },
+            error: function (xhr, status, error) {
+                console.error("Error loading data:", error);
+            }
+        });
+    }
+    function GetNowEmployeeInfo() {
+        $.ajax({
+            type: "POST",
+            url:"/Employee/GetNowEmployeeInfo",
+            contentType: "application/json",
+            async:false,
+            dataType: "json",
+            success: function(data) {
+                NowEmployeeInfo = data;
+                if (data.parentId!=1&&data.parentId!=null){
+                    EmployeePower=true;
+                    $(".adminButton").hide();
+                }
+                $(".nowId").val(data.employeeId);
+            },
+            error: function(error) {
+                console.error("没有登录");
+            }
+        });
+    }
+</script>
+</html>
